@@ -22,10 +22,11 @@ function createFallingWord() {
 }
 
 function drawFallingWords() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     fallingWords.forEach(wordObj => {
         ctx.font = '20px Arial';
         ctx.fillText(wordObj.text, wordObj.x, wordObj.y);
-        wordObj.y += level; // 단어의 속도는 레벨에 비례합니다.
+        wordObj.y += level * 0.5; // 단어의 속도는 레벨에 비례합니다.
     });
 }
 
@@ -43,7 +44,7 @@ function checkCollision() {
         if (wordObj.y > canvas.height) {
             return false;
         }
-        if (wordObj.x < player.x + player.width && wordObj.x + 50 > player.x && wordObj.y < player.y + player.height && wordObj.y + 20 > player.y) {
+        if (wordObj.x < player.x + player.width && wordObj.x + ctx.measureText(wordObj.text).width > player.x && wordObj.y < player.y + player.height && wordObj.y + 20 > player.y) {
             updateScore(wordObj.text);
             return false;
         }
@@ -52,7 +53,6 @@ function checkCollision() {
 }
 
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer();
     drawFallingWords();
     checkCollision();

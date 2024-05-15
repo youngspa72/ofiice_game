@@ -158,7 +158,7 @@
         });
 
         window.addEventListener('click', (event) => {
-            const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
+            const angle = Math.atan2(event.clientY - (player.y + player.height / 2), event.clientX - (player.x + player.width / 2));
             const velocity = {
                 x: Math.cos(angle) * 5,
                 y: Math.sin(angle) * 5

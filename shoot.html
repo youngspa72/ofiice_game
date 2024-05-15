@@ -3,7 +3,7 @@
 <head>
     <title>Ethical Management Shooting Game</title>
     <style>
-        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background:white; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #FFF; }
         canvas { background: #000; display: block; }
         #score, #missed { color: black; position: absolute; top: 10px; }
         #score { left: 10px; }
@@ -20,7 +20,7 @@
 
         let score = 0;
         let missed = 0;
-        const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20, speed: 20 };
+        const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20 };
         const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
         const bullets = [];
         const enemies = [];
@@ -116,7 +116,8 @@
         }
 
         function movePlayer(event) {
-            player.x = event.clientX - player.width / 2;
+            const rect = canvas.getBoundingClientRect();
+            player.x = event.clientX - rect.left - player.width / 2;
         }
 
         window.addEventListener('mousemove', movePlayer);

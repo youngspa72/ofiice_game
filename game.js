@@ -9,7 +9,7 @@ const negativeWords = [
 
 const words = [];
 const wordSpeed = 1;
-const spawnRate = 1500; // 단어 생성 간격 (밀리초)
+const spawnRate = 1000; // 단어 생성 간격 (밀리초)
 let lastSpawn = -1;
 let score = 0;
 let gameOver = false;
@@ -64,7 +64,7 @@ function shoot(event) {
 function checkGameOver() {
     // 조건을 변경하여 게임 종료 조건을 설정하세요.
     // 예를 들어, 일정 점수 도달 또는 놓친 단어 수 제한 등
-    if (words.length > 20) {  // 예시 조건
+    if (words.length = 1) {  // 예시 조건
         gameOver = true;
     }
 }

@@ -1,125 +1,123 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>윤리경영 슈팅 게임</title>
-<style>
-  body { padding: 0; margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-  canvas { display: block; background: #000; }
-  #score { color: white; position: absolute; top: 10px; left: 10px; }
-  #missed { color: white; position: absolute; top: 10px; right: 10px; }
-  #gameOver { color: white; text-align: center; width: 100%; position: absolute; top: 50%; transform: translateY(-50%); font-size: 40px; display: none; }
-</style>
+    <title>Ethical Management Shooting Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { background: #000; display: block; }
+        #score, #missed { color: white; position: absolute; top: 10px; }
+        #score { left: 10px; }
+        #missed { right: 10px; }
+    </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<div id="score">Score: 0</div>
-<div id="missed">Missed: 0</div>
-<div id="gameOver">Game Over</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="score">Score: 0</div>
+    <div id="missed">Missed: 0</div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+        let score = 0;
+        let missed = 0;
+        const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
+        const bullets = [];
+        const enemies = [];
 
-const words = ["부정", "비리", "뇌물", "횡령", "사기", "위조", "부패", "배임", "조작", "속임"];
-const enemies = [];
-const player = { x: canvas.width / 2, y: canvas.height - 30 };
-const bullets = [];
-let score = 0;
-let missed = 0;
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 5;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "white";
+                ctx.fill();
+                ctx.closePath();
+            }
+            update() {
+                this.y -= 5;
+            }
+        }
 
-class Enemy {
-  constructor(word) {
-    this.x = Math.random() * (canvas.width - 50);
-    this.y = -30;
-    this.word = word;
-  }
-  
-  draw() {
-    ctx.fillStyle = 'red';
-    ctx.fillText(this.word, this.x, this.y);
-    this.y += 1;
-    if (this.y > canvas.height) {
-      missed++;
-      document.getElementById('missed').innerText = 'Missed: ' + missed;
-      if (missed >= 10) {
-        document.getElementById('gameOver').style.display = 'block';
-        clearInterval(gameInterval);
-      }
-    }
-  }
-}
+        class Enemy {
+            constructor(word) {
+                this.x = Math.random() * canvas.width;
+                this.y = 0;
+                this.word = word;
+                this.speed = 0.5 + Math.random() * 1.5;
+            }
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.font = "20px Arial";
+                ctx.fillText(this.word, this.x, this.y);
+            }
+            update() {
+                this.y += this.speed;
+            }
+        }
 
-document.addEventListener('mousemove', function(event) {
-  player.x = event.clientX;
-});
+        function spawnEnemies() {
+            while (enemies.length < 10) {
+                const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
+                enemies.push(new Enemy(word));
+            }
+        }
 
-document.addEventListener('click', function() {
-  bullets.push({ x: player.x, y: player.y });
-});
+        function gameOver() {
+            ctx.fillStyle = "white";
+            ctx.font = "50px Arial";
+            ctx.fillText("Game Over", canvas.width / 2 - 150, canvas.height / 2);
+            clearInterval(gameInterval);
+        }
 
-function drawPlayer() {
-  ctx.fillStyle = 'white';
-  ctx.fillRect(player.x - 15, player.y - 15, 30, 30);
-}
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-function drawBullets() {
-  ctx.fillStyle = 'red';
-  for (let i = 0; i < bullets.length; i++) {
-    ctx.fillRect(bullets[i].x - 3, bullets[i].y, 6, 20);
-    bullets[i].y -= 4;
-    
-    // Check collision
-    for (let j = 0; j < enemies.length; j++) {
-      if (bullets[i].x >= enemies[j].x && bullets[i].x <= enemies[j].x + ctx.measureText(enemies[j].word).width &&
-          bullets[i].y <= enemies[j].y && bullets[i].y >= enemies[j].y - 30) {
-        score++;
-        document.getElementById('score').innerText = 'Score: ' + score;
-        enemies.splice(j, 1);
-        bullets.splice(i, 1);
-        break;
-      }
-    }
-  }
-}
+            bullets.forEach((bullet, bIndex) => {
+                bullet.update();
+                bullet.draw();
+                if (bullet.y < 0) bullets.splice(bIndex, 1);
+            });
 
-function spawnEnemies() {
-  let word = words[Math.floor(Math.random() * words.length)];
-  enemies.push(new Enemy(word));
-  
-  // 다음 적 생성까지의 랜덤 시간 설정 (0.3초에서 2초 사이)
-  let nextSpawnTime = Math.random() * (2000 - 300) + 300; // 300ms ~ 2000ms 사이의 랜덤 값
-  setTimeout(spawnEnemies, nextSpawnTime);
-}
+            enemies.forEach((enemy, eIndex) => {
+                enemy.update();
+                enemy.draw();
 
-// 게임 시작 시 적을 생성하는 초기 호출
-setTimeout(spawnEnemies, 500);
+                if (enemy.y > canvas.height) {
+                    missed++;
+                    enemies.splice(eIndex, 1);
+                    spawnEnemies();
+                    if (missed >= 10) gameOver();
+                }
 
+                bullets.forEach((bullet, bIndex) => {
+                    if (
+                        bullet.x > enemy.x && bullet.x < enemy.x + ctx.measureText(enemy.word).width &&
+                        bullet.y > enemy.y - 20 && bullet.y < enemy.y
+                    ) {
+                        score++;
+                        bullets.splice(bIndex, 1);
+                        enemies.splice(eIndex, 1);
+                        spawnEnemies();
+                    }
+                });
+            });
 
-function drawEnemies() {
-  ctx.font = '20px Arial';
-  for (let enemy of enemies) {
-    enemy.draw();
-  }
-}
+            document.getElementById('score').innerText = `Score: ${score}`;
+            document.getElementById('missed').innerText = `Missed: ${missed}`;
+        }
 
-function updateGame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawPlayer();
-  drawBullets();
-  drawEnemies();
-}
+        window.addEventListener('click', (e) => {
+            bullets.push(new Bullet(e.clientX, canvas.height - 20));
+        });
 
-const gameInterval = setInterval(updateGame, 1000 / 60);
-setInterval(spawnEnemies, 500);
-
-window.addEventListener('resize', function() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  player.y = canvas.height - 30;
-});
-</script>
+        spawnEnemies();
+        const gameInterval = setInterval(update, 20);
+    </script>
 </body>
 </html>

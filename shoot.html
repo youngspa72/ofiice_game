@@ -3,7 +3,7 @@
 <head>
     <title>Ethical Management Shooting Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
         canvas { background: #000; display: block; }
         #score, #missed { color: white; position: absolute; top: 10px; }
         #score { left: 10px; }
@@ -11,17 +11,16 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" width="600" height="450"></canvas>
     <div id="score">Score: 0</div>
     <div id="missed">Missed: 0</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
 
         let score = 0;
         let missed = 0;
+        const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20, speed: 10 };
         const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
         const bullets = [];
         const enemies = [];
@@ -78,6 +77,10 @@
         function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Draw player
+            ctx.fillStyle = "blue";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
             bullets.forEach((bullet, bIndex) => {
                 bullet.update();
                 bullet.draw();
@@ -112,8 +115,21 @@
             document.getElementById('missed').innerText = `Missed: ${missed}`;
         }
 
+        function movePlayer(event) {
+            switch (event.key) {
+                case "ArrowLeft":
+                    player.x = Math.max(0, player.x - player.speed);
+                    break;
+                case "ArrowRight":
+                    player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+                    break;
+            }
+        }
+
+        window.addEventListener('keydown', movePlayer);
+
         window.addEventListener('click', (e) => {
-            bullets.push(new Bullet(e.clientX, canvas.height - 20));
+            bullets.push(new Bullet(player.x + player.width / 2, player.y));
         });
 
         spawnEnemies();

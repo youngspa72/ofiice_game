@@ -1,14 +1,22 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+const playerImage = new Image();
+playerImage.src = 'https://via.placeholder.com/50'; // 적절한 URL로 대체하세요.
+
 const positiveWords = ["정직", "투명성", "신뢰", "책임감", "공정", "윤리", "청렴", "존중", "성실", "공익", "배려", "협력", "윤리적 리더십", "정당성", "준법", "도덕성", "진실성", "윤리적 결단력", "사회적 책임", "성과", "지속 가능성", "감사", "가치", "인권", "상생", "자율", "혁신", "소통", "신의", "약속"];
 const negativeWords = ["부패", "사기", "불법", "불공정", "부정", "편법", "차별", "은폐", "조작", "독단", "횡령", "부당", "압박", "부주의", "이기주의", "무책임", "탈법", "유린", "비윤리", "착취", "불투명", "무관심", "불신", "불성실", "비협조", "부정직", "불균형", "독선", "무시", "오용"];
 
+const player = { x: canvas.width / 2, y: canvas.height - 60, width: 50, height: 50 };
 let score = 0;
 let level = 1;
 let fallingWords = [];
 let bullets = [];
 const bulletSpeed = 5;
+
+function drawPlayer() {
+    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+}
 
 function createFallingWord() {
     const word = Math.random() > 0.5 ? positiveWords[Math.floor(Math.random() * positiveWords.length)] : negativeWords[Math.floor(Math.random() * negativeWords.length)];
@@ -58,6 +66,7 @@ function checkCollisions() {
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
     drawFallingWords();
     drawBullets();
     checkCollisions();
@@ -73,11 +82,18 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+canvas.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    player.x = event.clientX - rect.left - player.width / 2;
+});
+
 canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = player.x + player.width / 2;
+    const y = player.y;
     bullets.push({ x: x - 2.5, y: y }); // bullet starting position
 });
 
-gameLoop();
+playerImage.onload = () => {
+    gameLoop();
+};

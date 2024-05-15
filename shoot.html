@@ -3,9 +3,9 @@
 <head>
     <title>Ethical Management Shooting Game</title>
     <style>
-        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
         canvas { background: #000; display: block; }
-        #score, #missed, #title, #time { color: white; position: absolute; }
+        #score, #missed, #title, #time { color: black; position: absolute; }
         #title { top: 10px; left: 50%; transform: translateX(-50%); text-align: center; }
         #time { top: 40px; left: 50%; transform: translateX(-50%); text-align: center; }
         #score { top: 10px; left: 10px; }
@@ -49,11 +49,11 @@
         }
 
         class Enemy {
-            constructor(word) {
-                this.x = Math.random() * canvas.width;
-                this.y = 0;
+            constructor(word, x, y, speed) {
+                this.x = x;
+                this.y = y;
                 this.word = word;
-                this.speed = 0.5 + Math.random() * 1.5;
+                this.speed = speed;
             }
             draw() {
                 ctx.fillStyle = "red";
@@ -65,11 +65,23 @@
             }
         }
 
+        function getUniqueRandomWords(count) {
+            const shuffled = negativeWords.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
         function spawnEnemies() {
-            while (enemies.length < 10) {  // 단어의 개수를 10개로 변경
-                const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
-                enemies.push(new Enemy(word));
-            }
+            enemies.length = 0; // Clear existing enemies
+            const uniqueWords = getUniqueRandomWords(8); // 단어의 개수를 8개로 변경
+            uniqueWords.forEach(word => {
+                let x, y;
+                let speed = 0.5 + Math.random() * 1.5;
+                do {
+                    x = Math.random() * (canvas.width - 50); // Ensure the word fits in the canvas width
+                    y = Math.random() * canvas.height / 4; // Ensure the words start from the top quarter of the canvas
+                } while (enemies.some(enemy => Math.abs(enemy.x - x) < 50 && Math.abs(enemy.y - y) < 30)); // Avoid overlap
+                enemies.push(new Enemy(word, x, y, speed));
+            });
         }
 
         function gameOver() {
@@ -137,6 +149,7 @@
         }
 
         window.addEventListener('mousemove', movePlayer);
+
         window.addEventListener('click', () => {
             bullets.push(new Bullet(player.x + player.width / 2, player.y));
         });

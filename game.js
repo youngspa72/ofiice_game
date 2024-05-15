@@ -81,7 +81,7 @@ function checkCollisions() {
             updateMissed();
             return false;
         }
-        return true;
+        return !hit;
     });
 }
 

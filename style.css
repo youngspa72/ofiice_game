@@ -10,7 +10,6 @@ canvas {
     border: 1px solid black;
 }
 
-#score {
+#score, #missed {
     font-size: 20px;
 }
-``

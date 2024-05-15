@@ -3,9 +3,9 @@
 <head>
     <title>Ethical Management Shooting Game</title>
     <style>
-        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
         canvas { background: #000; display: block; }
-        #score, #missed, #title, #time { color: black; position: absolute; }
+        #score, #missed, #title, #time { color: white; position: absolute; }
         #title { top: 10px; left: 50%; transform: translateX(-50%); text-align: center; }
         #time { top: 40px; left: 50%; transform: translateX(-50%); text-align: center; }
         #score { top: 10px; left: 10px; }
@@ -15,7 +15,7 @@
 <body>
     <canvas id="gameCanvas" width="600" height="450"></canvas>
     <div id="title">윤리경영 SHOOTING GAME</div>
-    <div id="time">접속시간: <span id="elapsedTime">0</span>초</div>
+    <div id="time">접속시간: <span id="connectionTime"></span></div>
     <div id="score">Score: 0</div>
     <div id="missed">Missed: 0</div>
     <script>
@@ -24,7 +24,7 @@
 
         let score = 0;
         let missed = 0;
-        let startTime = Date.now();
+
         const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20 };
         const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
         const bullets = [];
@@ -66,7 +66,7 @@
         }
 
         function spawnEnemies() {
-            while (enemies.length < 7) {
+            while (enemies.length < 10) {  // 단어의 개수를 10개로 변경
                 const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
                 enemies.push(new Enemy(word));
             }
@@ -118,7 +118,6 @@
 
             document.getElementById('score').innerText = `Score: ${score}`;
             document.getElementById('missed').innerText = `Missed: ${missed}`;
-            document.getElementById('elapsedTime').innerText = Math.floor((Date.now() - startTime) / 1000);
         }
 
         function movePlayer(event) {
@@ -126,11 +125,23 @@
             player.x = event.clientX - rect.left - player.width / 2;
         }
 
-        window.addEventListener('mousemove', movePlayer);
+        function getFormattedTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+        }
 
+        window.addEventListener('mousemove', movePlayer);
         window.addEventListener('click', () => {
             bullets.push(new Bullet(player.x + player.width / 2, player.y));
         });
+
+        document.getElementById('connectionTime').innerText = getFormattedTime();
 
         spawnEnemies();
         const gameInterval = setInterval(update, 20);

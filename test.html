@@ -6,17 +6,17 @@
     <title>Space Shooter Game</title>
     <style>
         body { margin: 0; overflow: hidden; background: black; }
-        canvas { display: block; }
+        canvas { display: block; margin: auto; background: black; }
+        #game-over { display: none; color: white; text-align: center; font-size: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="game-over">Game Over!<br>Score: <span id="score">0</span></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
+        
         class Player {
             constructor(x, y, width, height, color) {
                 this.x = x;
@@ -87,6 +87,10 @@
         const projectiles = [];
         const enemies = [];
         const keys = {};
+        let score = 0;
+        let animationId;
+        const gameOverElement = document.getElementById('game-over');
+        const scoreElement = document.getElementById('score');
 
         function spawnEnemies() {
             setInterval(() => {
@@ -100,7 +104,7 @@
         }
 
         function animate() {
-            requestAnimationFrame(animate);
+            animationId = requestAnimationFrame(animate);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             player.update();
             projectiles.forEach((projectile, index) => {
@@ -111,10 +115,19 @@
                 }
             });
             enemies.forEach((enemy, index) => {
+                enemy.update();
+
+                // Check collision with player
+                const distToPlayer = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+                if (distToPlayer - enemy.radius - player.width / 2 < 1) {
+                    cancelAnimationFrame(animationId);
+                    gameOverElement.style.display = 'block';
+                    scoreElement.textContent = score;
+                }
+
+                // Remove off-screen enemies
                 if (enemy.y - enemy.radius > canvas.height) {
                     enemies.splice(index, 1);
-                } else {
-                    enemy.update();
                 }
             });
 
@@ -125,10 +138,15 @@
                         setTimeout(() => {
                             enemies.splice(eIndex, 1);
                             projectiles.splice(pIndex, 1);
+                            score += 10;
                         }, 0);
                     }
                 });
             });
+
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
         }
 
         window.addEventListener('keydown', (e) => {

@@ -9,6 +9,7 @@ const negativeWords = [
 
 let player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 30 };
 let words = [];
+let bullets = [];
 let score = 0;
 let missed = 0;
 const missedLimit = 10;
@@ -17,6 +18,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer();
     drawWords();
+    drawBullets();
     requestAnimationFrame(draw);
 }
 
@@ -41,6 +43,18 @@ function drawWords() {
     });
 }
 
+function drawBullets() {
+    ctx.fillStyle = 'black';
+    bullets.forEach((bullet, index) => {
+        bullet.y -= bullet.speed;
+        ctx.fillRect(bullet.x, bullet.y, 2, 10);
+        if (bullet.y < 0) {
+            bullets.splice(index, 1);
+        }
+        checkCollisions(bullet, index);
+    });
+}
+
 function addWord() {
     const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
     const x = Math.random() * (canvas.width - ctx.measureText(wordText).width);
@@ -50,15 +64,21 @@ function addWord() {
     setTimeout(addWord, 2000);
 }
 
-function checkHit(x, y) {
-    words = words.filter(word => {
-        if (x >= word.x && x <= word.x + ctx.measureText(word.text).width && y >= word.y && y <= word.y + 20) {
+function checkCollisions(bullet, bulletIndex) {
+    words.forEach((word, wordIndex) => {
+        if (bullet.x >= word.x && bullet.x <= word.x + ctx.measureText(word.text).width && bullet.y >= word.y && bullet.y <= word.y + 20) {
+            words.splice(wordIndex, 1);
+            bullets.splice(bulletIndex, 1);
             score++;
-            return false;
+            document.getElementById('score').innerText = 'Score: ' + score;
         }
-        return true;
     });
-    document.getElementById('score').innerText = 'Score: ' + score;
+}
+
+function shoot(event) {
+    const x = event.clientX - canvas.offsetLeft;
+    const y = player.y;
+    bullets.push({ x, y, speed: 5 });
 }
 
 function displayGameOver() {
@@ -74,11 +94,7 @@ canvas.addEventListener('mousemove', function (event) {
     player.x = event.clientX - canvas.offsetLeft - player.width / 2;
 });
 
-canvas.addEventListener('click', function (event) {
-    const x = event.clientX - canvas.offsetLeft;
-    const y = event.clientY - canvas.offsetTop;
-    checkHit(x, y);
-});
+canvas.addEventListener('click', shoot);
 
 draw();
 addWord();

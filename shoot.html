@@ -3,10 +3,10 @@
 <head>
     <title>Ethical Management Shooting Game</title>
     <style>
-        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
         canvas { background: #000; display: block; }
-        #score, #missed, #title, #time { color: black; position: absolute; }
-        #title { top: 10px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 30px; } /* 폰트 크기 수정 */
+        #score, #missed, #title, #time { color: white; position: absolute; }
+        #title { top: 10px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 24px; } /* 폰트 크기 수정 */
         #time { top: 40px; left: 50%; transform: translateX(-50%); text-align: center; }
         #score { top: 10px; left: 10px; }
         #missed { top: 10px; right: 10px; }
@@ -76,6 +76,8 @@
             ctx.fillStyle = "white";
             ctx.font = "50px Arial";
             ctx.fillText("Game Over", canvas.width / 2 - 150, canvas.height / 2);
+            ctx.font = "30px Arial";
+            ctx.fillText(`Score: ${score}`, canvas.width / 2 - 60, canvas.height / 2 + 50);
             clearInterval(gameInterval);
         }
 

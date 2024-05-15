@@ -24,7 +24,6 @@
         const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
         const bullets = [];
         const enemies = [];
-        let keys = {};
 
         class Bullet {
             constructor(x, y) {
@@ -62,7 +61,7 @@
         }
 
         function spawnEnemies() {
-            while (enemies.length < 10) {
+            while (enemies.length < 5) {
                 const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
                 enemies.push(new Enemy(word));
             }
@@ -114,24 +113,18 @@
 
             document.getElementById('score').innerText = `Score: ${score}`;
             document.getElementById('missed').innerText = `Missed: ${missed}`;
-
-            if (keys['ArrowLeft']) {
-                player.x = Math.max(0, player.x - player.speed);
-            }
-            if (keys['ArrowRight']) {
-                player.x = Math.min(canvas.width - player.width, player.x + player.speed);
-            }
         }
 
+        function movePlayer(event) {
+            player.x = event.clientX - player.width / 2;
+        }
+
+        window.addEventListener('mousemove', movePlayer);
+
         window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
             if (e.key === ' ') {
                 bullets.push(new Bullet(player.x + player.width / 2, player.y));
             }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
         });
 
         spawnEnemies();

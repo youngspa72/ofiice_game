@@ -3,33 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Shooting Game</title>
+    <title>Space Shooter Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; background: #000; }
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
     <script>
-        console.log("Script loaded");
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
         class Player {
-            constructor(x, y, radius, color) {
+            constructor(x, y, width, height, color) {
                 this.x = x;
                 this.y = y;
-                this.radius = radius;
+                this.width = width;
+                this.height = height;
                 this.color = color;
+                this.speed = 5;
             }
             draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
                 ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            update() {
+                if (keys['ArrowUp'] && this.y > 0) this.y -= this.speed;
+                if (keys['ArrowDown'] && this.y < canvas.height - this.height) this.y += this.speed;
+                if (keys['ArrowLeft'] && this.x > 0) this.x -= this.speed;
+                if (keys['ArrowRight'] && this.x < canvas.width - this.width) this.x += this.speed;
+                this.draw();
             }
         }
 
@@ -46,40 +52,104 @@
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
                 ctx.fillStyle = this.color;
                 ctx.fill();
+                ctx.closePath();
             }
             update() {
-                this.draw();
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
+                this.draw();
             }
         }
 
-        const player = new Player(canvas.width / 2, canvas.height / 2, 20, 'white');
+        class Enemy {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.draw();
+            }
+        }
+
+        const player = new Player(canvas.width / 2 - 15, canvas.height - 60, 30, 30, 'blue');
         const projectiles = [];
+        const enemies = [];
+        const keys = {};
+
+        function spawnEnemies() {
+            setInterval(() => {
+                const radius = 20;
+                const x = Math.random() * (canvas.width - radius * 2) + radius;
+                const y = -radius;
+                const color = 'red';
+                const velocity = { x: 0, y: 3 };
+                enemies.push(new Enemy(x, y, radius, color, velocity));
+            }, 1000);
+        }
 
         function animate() {
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            player.draw();
+            player.update();
             projectiles.forEach((projectile, index) => {
-                projectile.update();
-                if (projectile.x + projectile.radius < 0 || projectile.x - projectile.radius > canvas.width ||
-                    projectile.y + projectile.radius < 0 || projectile.y - projectile.radius > canvas.height) {
-                    setTimeout(() => {
-                        projectiles.splice(index, 1);
-                    }, 0);
+                if (projectile.y + projectile.radius < 0) {
+                    projectiles.splice(index, 1);
+                } else {
+                    projectile.update();
                 }
+            });
+            enemies.forEach((enemy, index) => {
+                if (enemy.y - enemy.radius > canvas.height) {
+                    enemies.splice(index, 1);
+                } else {
+                    enemy.update();
+                }
+            });
+
+            projectiles.forEach((projectile, pIndex) => {
+                enemies.forEach((enemy, eIndex) => {
+                    const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+                    if (dist - enemy.radius - projectile.radius < 1) {
+                        setTimeout(() => {
+                            enemies.splice(eIndex, 1);
+                            projectiles.splice(pIndex, 1);
+                        }, 0);
+                    }
+                });
             });
         }
 
-        addEventListener('click', (event) => {
-            const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
-            const velocity = { x: Math.cos(angle) * 5, y: Math.sin(angle) * 5 };
-            projectiles.push(new Projectile(player.x, player.y, 5, 'white', velocity));
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
         });
 
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        window.addEventListener('click', (event) => {
+            const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
+            const velocity = {
+                x: Math.cos(angle) * 5,
+                y: Math.sin(angle) * 5
+            };
+            projectiles.push(new Projectile(player.x + player.width / 2, player.y, 5, 'white', velocity));
+        });
+
+        spawnEnemies();
         animate();
-        console.log("Game started");
     </script>
 </body>
 </html>

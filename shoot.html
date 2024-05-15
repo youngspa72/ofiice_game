@@ -121,10 +121,8 @@
 
         window.addEventListener('mousemove', movePlayer);
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === ' ') {
-                bullets.push(new Bullet(player.x + player.width / 2, player.y));
-            }
+        window.addEventListener('click', () => {
+            bullets.push(new Bullet(player.x + player.width / 2, player.y));
         });
 
         spawnEnemies();

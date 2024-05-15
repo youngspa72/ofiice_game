@@ -1,17 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethics Management Shooting Game</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>윤리경영 슈팅 게임</title>
+<style>
+  body { padding: 0; margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+  canvas { display: block; background: #000; }
+  #score { color: white; position: absolute; top: 10px; left: 10px; }
+  #missed { color: white; position: absolute; top: 10px; right: 10px; }
+  #gameOver { color: white; text-align: center; width: 100%; position: absolute; top: 50%; transform: translateY(-50%); font-size: 40px; display: none; }
+</style>
 </head>
 <body>
-    <h1>Ethics Management Shooting Game</h1>
-    <div id="accessTime">접속시간:</div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="score">Score: 0</div>
-    <div id="missed">Missed: 0</div>
-    <script src="game.js"></script>
+<canvas id="gameCanvas"></canvas>
+<div id="score">Score: 0</div>
+<div id="missed">Missed: 0</div>
+<div id="gameOver">Game Over</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const words = ["부정", "비리", "뇌물", "횡령", "사기", "위조", "부패", "배임", "조작", "속임"];
+const enemies = [];
+const player = { x: canvas.width / 2, y: canvas.height - 30 };
+const bullets = [];
+let score = 0;
+let missed = 0;
+
+class Enemy {
+  constructor(word) {
+    this.x = Math.random() * (canvas.width - 50);
+    this.y = -30;
+    this.word = word;
+  }
+  
+  draw() {
+    ctx.fillStyle = 'red';
+    ctx.fillText(this.word, this.x, this.y);
+    this.y += 1;
+    if (this.y > canvas.height) {
+      missed++;
+      document.getElementById('missed').innerText = 'Missed: ' + missed;
+      if (missed >= 10) {
+        document.getElementById('gameOver').style.display = 'block';
+        clearInterval(gameInterval);
+      }
+    }
+  }
+}
+
+document.addEventListener('mousemove', function(event) {
+  player.x = event.clientX;
+});
+
+document.addEventListener('click', function() {
+  bullets.push({ x: player.x, y: player.y });
+});
+
+function drawPlayer() {
+  ctx.fillStyle = 'white';
+  ctx.fillRect(player.x - 15, player.y - 15, 30, 30);
+}
+
+function drawBullets() {
+  ctx.fillStyle = 'yellow';
+  for (let i = 0; i < bullets.length; i++) {
+    ctx.fillRect(bullets[i].x - 3, bullets[i].y, 6, 20);
+    bullets[i].y -= 4;
+    
+    // Check collision
+    for (let j = 0; j < enemies.length; j++) {
+      if (bullets[i].x >= enemies[j].x && bullets[i].x <= enemies[j].x + ctx.measureText(enemies[j].word).width &&
+          bullets[i].y <= enemies[j].y && bullets[i].y >= enemies[j].y - 30) {
+        score++;
+        document.getElementById('score').innerText = 'Score: ' + score;
+        enemies.splice(j, 1);
+        bullets.splice(i, 1);
+        break;
+      }
+    }
+  }
+}
+
+function spawnEnemies() {
+  if (Math.random() < 0.05) {
+    let word = words[Math.floor(Math.random() * words.length)];
+    enemies.push(new Enemy(word));
+  }
+}
+
+function drawEnemies() {
+  ctx.font = '20px Arial';
+  for (let enemy of enemies) {
+    enemy.draw();
+  }
+}
+
+function updateGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPlayer();
+  drawBullets();
+  drawEnemies();
+}
+
+const gameInterval = setInterval(updateGame, 1000 / 60);
+setInterval(spawnEnemies, 2000);
+
+window.addEventListener('resize', function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  player.y = canvas.height - 30;
+});
+</script>
 </body>
 </html>

@@ -10,12 +10,19 @@ const negativeWords = [
 let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 50 };
 let words = [];
 let score = 0;
+let missed = 0;
+const missedLimit = 10;
+let gameOver = false;
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer();
     drawWords();
-    requestAnimationFrame(draw);
+    if (!gameOver) {
+        requestAnimationFrame(draw);
+    } else {
+        displayGameOver();
+    }
 }
 
 function drawPlayer() {
@@ -26,22 +33,29 @@ function drawPlayer() {
 function drawWords() {
     ctx.font = '20px Arial';
     ctx.fillStyle = 'red';
-    words.forEach(word => {
-        ctx.fillText(word.text, word.x, word.y);
+    words.forEach((word, index) => {
         word.y += word.speed;
+        ctx.fillText(word.text, word.x, word.y);
         if (word.y > canvas.height) {
-            words.splice(words.indexOf(word), 1);
+            words.splice(index, 1);
+            missed++;
+            document.getElementById('missed').innerText = `Missed: ${missed}`;
+            if (missed >= missedLimit) {
+                gameOver = true;
+            }
         }
     });
 }
 
 function addWord() {
-    const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
-    const x = Math.random() * (canvas.width - 100);
-    const y = 0;
-    const speed = 1 + Math.random() * 2;  // Random speed between 1 and 3
-    words.push({ text: wordText, x, y, speed });
-    setTimeout(addWord, 2000);
+    if (!gameOver) {
+        const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
+        const x = Math.random() * (canvas.width - ctx.measureText(wordText).width);
+        const y = 0;
+        const speed = 1 + Math.random() * 2;  // Random speed between 1 and 3
+        words.push({ text: wordText, x, y, speed });
+        setTimeout(addWord, 2000 - score * 10); // Decrease interval as score increases
+    }
 }
 
 function checkHit(x, y) {
@@ -53,6 +67,16 @@ function checkHit(x, y) {
         }
         return true;
     });
+}
+
+function displayGameOver() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '48px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+    ctx.font = '24px Arial';
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
 }
 
 canvas.addEventListener('mousemove', function (event) {

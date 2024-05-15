@@ -12,6 +12,7 @@ const wordSpeed = 1;
 const spawnRate = 1500; // 단어 생성 간격 (밀리초)
 let lastSpawn = -1;
 let score = 0;
+let gameOver = false;
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -22,20 +23,28 @@ function draw() {
         ctx.fillText(word.text, word.x, word.y);
         if (word.y > canvas.height) {
             words.splice(index, 1);
+            checkGameOver();
         }
     });
-    requestAnimationFrame(draw);
+
+    if (!gameOver) {
+        requestAnimationFrame(draw);
+    } else {
+        displayGameOver();
+    }
 }
 
 function spawnWord(timestamp) {
-    if (lastSpawn === -1 || timestamp - lastSpawn >= spawnRate) {
+    if (!gameOver && (lastSpawn === -1 || timestamp - lastSpawn >= spawnRate)) {
         const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
         const x = Math.random() * (canvas.width - ctx.measureText(word).width);
         const y = 20;
         words.push({ text: word, x: x, y: y });
         lastSpawn = timestamp;
     }
-    requestAnimationFrame(spawnWord);
+    if (!gameOver) {
+        requestAnimationFrame(spawnWord);
+    }
 }
 
 function shoot(event) {
@@ -50,6 +59,22 @@ function shoot(event) {
             words.splice(index, 1);
         }
     });
+}
+
+function checkGameOver() {
+    // 조건을 변경하여 게임 종료 조건을 설정하세요.
+    // 예를 들어, 일정 점수 도달 또는 놓친 단어 수 제한 등
+    if (words.length > 20) {  // 예시 조건
+        gameOver = true;
+    }
+}
+
+function displayGameOver() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '40px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
 }
 
 canvas.addEventListener('click', shoot);

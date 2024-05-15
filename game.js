@@ -13,6 +13,7 @@ let bullets = [];
 let score = 0;
 let missed = 0;
 const missedLimit = 10;
+let gameOver = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     displayAccessTime();
@@ -27,6 +28,11 @@ function displayAccessTime() {
 }
 
 function draw() {
+    if (gameOver) {
+        displayGameOver();
+        return;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer();
     drawWords();
@@ -48,8 +54,9 @@ function drawWords() {
         if (word.y > canvas.height) {
             words.splice(index, 1);
             missed++;
+            document.getElementById('missed').innerText = `Missed: ${missed}`;
             if (missed >= missedLimit) {
-                displayGameOver();
+                gameOver = true;
             }
         }
     });
@@ -68,12 +75,14 @@ function drawBullets() {
 }
 
 function addWord() {
-    const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
-    const x = Math.random() * (canvas.width - ctx.measureText(wordText).width);
-    const y = 0;
-    const speed = 1 + Math.random() * 2;  // Random speed between 1 and 3
-    words.push({ text: wordText, x, y, speed });
-    setTimeout(addWord, 2000);
+    if (!gameOver) {
+        const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
+        const x = Math.random() * (canvas.width - ctx.measureText(wordText).width);
+        const y = 0;
+        const speed = 1 + Math.random() * 2;  // Random speed between 1 and 3
+        words.push({ text: wordText, x, y, speed });
+        setTimeout(addWord, 2000);
+    }
 }
 
 function checkCollisions(bullet, bulletIndex) {
@@ -97,4 +106,13 @@ function displayGameOver() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = '48px Arial';
     ctx.fillStyle = 'black';
-    ctx.textAlign = '
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+}
+
+canvas.addEventListener('mousemove', function (event) {
+    player.x = event.clientX - canvas.offsetLeft - player.width / 2;
+});
+
+canvas.addEventListener('click', shoot);

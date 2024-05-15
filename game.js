@@ -7,59 +7,65 @@ const negativeWords = [
     "불신", "불성실", "비협조", "부정직", "불균형", "독선", "무시", "오용"
 ];
 
-const words = [];
+let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 50 };
+let words = [];
 let score = 0;
-let missed = 0;
-const missedLimit = 10;
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'red';
-    words.forEach((word, index) => {
-        word.y += word.speed;
-        ctx.fillText(word.text, word.x, word.y);
-        if (word.y > canvas.height) {
-            words.splice(index, 1);
-            missed += 1;
-            if (missed >= missedLimit) {
-                gameOver();
-            }
-        }
-    });
+    drawPlayer();
+    drawWords();
     requestAnimationFrame(draw);
 }
 
-function addWord() {
-    const word = negativeWords[Math.floor(Math.random() * negativeWords.length)];
-    const x = Math.random() * (canvas.width - ctx.measureText(word).width);
-    const speed = 1 + Math.random();  // Increasing speed randomly for variety
-    words.push({ text: word, x, y: 20, speed });
-    setTimeout(addWord, 2000 - score * 10); // Decrease interval as score increases
+function drawPlayer() {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
-function shoot(event) {
-    const clickX = event.clientX - canvas.offsetLeft;
-    const clickY = event.clientY - canvas.offsetTop;
-    words.forEach((word, index) => {
-        if (clickX >= word.x && clickX <= word.x + ctx.measureText(word.text).width && clickY >= word.y - 20 && clickY <= word.y) {
-            words.splice(index, 1);
-            score++;
-            document.getElementById('score').innerText = `Score: ${score}`;
+function drawWords() {
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'red';
+    words.forEach(word => {
+        ctx.fillText(word.text, word.x, word.y);
+        word.y += word.speed;
+        if (word.y > canvas.height) {
+            words.splice(words.indexOf(word), 1);
         }
     });
 }
 
-function gameOver() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '48px Arial';
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-    ctx.font = '24px Arial';
-    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+function addWord() {
+    const wordText = negativeWords[Math.floor(Math.random() * negativeWords.length)];
+    const x = Math.random() * (canvas.width - 100);
+    const y = 0;
+    const speed = 1 + Math.random() * 2;  // Random speed between 1 and 3
+    words.push({ text: wordText, x, y, speed });
+    setTimeout(addWord, 2000);
 }
 
-canvas.addEventListener('click', shoot);
+function checkHit(x, y) {
+    words = words.filter(word => {
+        if (x >= word.x && x <= word.x + ctx.measureText(word.text).width && y >= word.y && y <= word.y + 20) {
+            score++;
+            document.getElementById('score').innerText = 'Score: ' + score;
+            return false;
+        }
+        return true;
+    });
+}
+
+canvas.addEventListener('mousemove', function (event) {
+    const rect = canvas.getBoundingClientRect();
+    player.x = event.clientX - rect.left - player.width / 2;
+});
+
+canvas.addEventListener('click', function (event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    checkHit(x, y);
+});
+
 draw();
 addWord();

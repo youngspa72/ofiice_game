@@ -11,30 +11,28 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div id="game-over">Game Over!<br>Score: <span id="score">0</span></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
         class Player {
-            constructor(x, y, width, height, color) {
-                this.x = x;
-                this.y = y;
+            constructor(width, height, color) {
                 this.width = width;
                 this.height = height;
                 this.color = color;
                 this.speed = 5;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 20;
             }
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
             update() {
-                if (keys['ArrowUp'] && this.y > 0) this.y -= this.speed;
-                if (keys['ArrowDown'] && this.y < canvas.height - this.height) this.y += this.speed;
-                if (keys['ArrowLeft'] && this.x > 0) this.x -= this.speed;
-                if (keys['ArrowRight'] && this.x < canvas.width - this.width) this.x += this.speed;
                 this.draw();
             }
         }
@@ -83,7 +81,7 @@
             }
         }
 
-        const player = new Player(canvas.width / 2 - 15, canvas.height - 60, 30, 30, 'blue');
+        const player = new Player(30, 30, 'blue');
         const projectiles = [];
         const enemies = [];
         const keys = {};
@@ -149,8 +147,19 @@
             ctx.fillText(`Score: ${score}`, 10, 30);
         }
 
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - player.height - 20;
+        });
+
         window.addEventListener('keydown', (e) => {
             keys[e.key] = true;
+            if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+            if (keys['ArrowDown'] && player.y < canvas.height - player.height) player.y += player.speed;
+            if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
         });
 
         window.addEventListener('keyup', (e) => {

@@ -107,7 +107,7 @@ function updateGame() {
 }
 
 const gameInterval = setInterval(updateGame, 1000 / 60);
-setInterval(spawnEnemies, 2000);
+setInterval(spawnEnemies, 500);
 
 window.addEventListener('resize', function() {
   canvas.width = window.innerWidth;

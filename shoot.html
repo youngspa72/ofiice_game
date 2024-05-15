@@ -86,11 +86,17 @@ function drawBullets() {
 }
 
 function spawnEnemies() {
-  if (Math.random() < 0.05) {
-    let word = words[Math.floor(Math.random() * words.length)];
-    enemies.push(new Enemy(word));
-  }
+  let word = words[Math.floor(Math.random() * words.length)];
+  enemies.push(new Enemy(word));
+  
+  // 다음 적 생성까지의 랜덤 시간 설정 (0.3초에서 2초 사이)
+  let nextSpawnTime = Math.random() * (2000 - 300) + 300; // 300ms ~ 2000ms 사이의 랜덤 값
+  setTimeout(spawnEnemies, nextSpawnTime);
 }
+
+// 게임 시작 시 적을 생성하는 초기 호출
+setTimeout(spawnEnemies, 500);
+
 
 function drawEnemies() {
   ctx.font = '20px Arial';

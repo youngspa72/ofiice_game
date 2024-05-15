@@ -1,15 +1,18 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const negativeWords = ["부패", "사기", "불법", "불공정", "부정", "편법", "차별", "은폐", "조작", "독단", "횡령", "부당", "압박", "부주의", "이기주의", "무책임", "탈법", "유린", "비윤리", "착취", "불투명", "무관심", "불신", "불성실", "비협조", "부정직", "불균형", "독선", "무시", "오용"];
+const negativeWords = ["부패", "불법", "불공정", "부정", "편법", "차별", "은폐", "조작", "독단", "횡령", "부당", "압박", "부주의", "이기주의", "무책임", "비윤리", "불투명", "무관심", "불신", "불성실", "비협조", "부정직", "불균형", "독선", "무시", "오용"];
 
 const player = { x: canvas.width / 2, y: canvas.height - 60, width: 50, height: 50 };
 let score = 0;
-let missedWords = 0;
+let missed = 0;
+let level = 1;
 let fallingWords = [];
 let bullets = [];
 const bulletSpeed = 5;
 const wordGap = 50; // 단어 간 최소 간격
+const maxMissed = 10;
+const levels = 20;
 
 function drawPlayer() {
     ctx.fillStyle = 'blue';
@@ -33,7 +36,7 @@ function drawFallingWords() {
         ctx.font = '20px Arial';
         ctx.fillStyle = 'red';
         ctx.fillText(wordObj.text, wordObj.x, wordObj.y);
-        wordObj.y += 1; // 단어의 속도
+        wordObj.y += 1 + level * 0.5; // 단어의 속도는 레벨에 비례합니다.
     });
 }
 
@@ -47,8 +50,20 @@ function drawBullets() {
 }
 
 function updateScore() {
-    score += 10;
+    score += 1;
     document.getElementById('score').innerText = `Score: ${score}`;
+    if (score % 20 === 0 && level < levels) {
+        level++;
+    }
+}
+
+function updateMissed() {
+    missed += 1;
+    document.getElementById('missed').innerText = `Missed: ${missed}`;
+    if (missed >= maxMissed) {
+        alert('Game Over! You missed 10 words.');
+        document.location.reload();
+    }
 }
 
 function checkCollisions() {
@@ -63,7 +78,7 @@ function checkCollisions() {
             return true;
         });
         if (!hit && wordObj.y > canvas.height) {
-            missedWords++;
+            updateMissed();
             return false;
         }
         return true;
@@ -78,13 +93,8 @@ function gameLoop() {
     checkCollisions();
 
     // 단어 생성 빈도 조정
-    if (Math.random() < 0.02) {
+    if (Math.random() < 0.01 * level) {
         createFallingWord();
-    }
-
-    if (missedWords >= 20) {
-        alert('Game Over! You missed 20 words.');
-        return;
     }
 
     requestAnimationFrame(gameLoop);

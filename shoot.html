@@ -20,10 +20,11 @@
 
         let score = 0;
         let missed = 0;
-        const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20, speed: 10 };
+        const player = { x: canvas.width / 2 - 25, y: canvas.height - 30, width: 50, height: 20, speed: 20 };
         const negativeWords = ["부패", "횡령", "뇌물", "사기", "부정", "거짓말", "탈세", "독점", "차별", "속임수"];
         const bullets = [];
         const enemies = [];
+        let keys = {};
 
         class Bullet {
             constructor(x, y) {
@@ -113,23 +114,24 @@
 
             document.getElementById('score').innerText = `Score: ${score}`;
             document.getElementById('missed').innerText = `Missed: ${missed}`;
-        }
 
-        function movePlayer(event) {
-            switch (event.key) {
-                case "ArrowLeft":
-                    player.x = Math.max(0, player.x - player.speed);
-                    break;
-                case "ArrowRight":
-                    player.x = Math.min(canvas.width - player.width, player.x + player.speed);
-                    break;
+            if (keys['ArrowLeft']) {
+                player.x = Math.max(0, player.x - player.speed);
+            }
+            if (keys['ArrowRight']) {
+                player.x = Math.min(canvas.width - player.width, player.x + player.speed);
             }
         }
 
-        window.addEventListener('keydown', movePlayer);
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') {
+                bullets.push(new Bullet(player.x + player.width / 2, player.y));
+            }
+        });
 
-        window.addEventListener('click', (e) => {
-            bullets.push(new Bullet(player.x + player.width / 2, player.y));
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
         });
 
         spawnEnemies();

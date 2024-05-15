@@ -14,6 +14,18 @@ let score = 0;
 let missed = 0;
 const missedLimit = 10;
 
+document.addEventListener('DOMContentLoaded', function() {
+    displayAccessTime();
+    draw();
+    addWord();
+});
+
+function displayAccessTime() {
+    const now = new Date();
+    const formattedTime = `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    document.getElementById('accessTime').innerText += ` ${formattedTime}`;
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer();
@@ -44,10 +56,10 @@ function drawWords() {
 }
 
 function drawBullets() {
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'yellow';  // Bright color for visibility
     bullets.forEach((bullet, index) => {
         bullet.y -= bullet.speed;
-        ctx.fillRect(bullet.x, bullet.y, 2, 10);
+        ctx.fillRect(bullet.x, bullet.y, 4, 10);  // Larger and more visible bullets
         if (bullet.y < 0) {
             bullets.splice(index, 1);
         }
@@ -78,23 +90,11 @@ function checkCollisions(bullet, bulletIndex) {
 function shoot(event) {
     const x = event.clientX - canvas.offsetLeft;
     const y = player.y;
-    bullets.push({ x, y, speed: 5 });
+    bullets.push({ x, y, speed: 10 });
 }
 
 function displayGameOver() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = '48px Arial';
     ctx.fillStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
-}
-
-canvas.addEventListener('mousemove', function (event) {
-    player.x = event.clientX - canvas.offsetLeft - player.width / 2;
-});
-
-canvas.addEventListener('click', shoot);
-
-draw();
-addWord();
+    ctx.textAlign = '
